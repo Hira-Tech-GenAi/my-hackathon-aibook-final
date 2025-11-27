@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunkmy_hackathon_aibook_final=globalThis.webpackChunkmy_hackathon_aibook_final||[]).push([[4906],{6559:a=>{a.exports=JSON.parse('{"metadata":{"permalink":"/my-hackathon-aibook-final/blog","page":1,"postsPerPage":10,"totalPages":1,"totalCount":4,"blogDescription":"Blog","blogTitle":"Blog"}}')}}]);
