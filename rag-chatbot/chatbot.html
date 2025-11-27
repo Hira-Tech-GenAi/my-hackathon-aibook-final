@@ -1,0 +1,189 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Chatbot</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        #chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            height: 450px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        #chatbot-header {
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #chatbot-header button {
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+
+        #chatbot-messages {
+            flex-grow: 1;
+            padding: 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 15px;
+            max-width: 80%;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background-color: #e0f7fa;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background-color: #f0f0f0;
+        }
+
+        #chatbot-input-container {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ccc;
+        }
+
+        #chatbot-input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        #chatbot-send-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+
+        #chatbot-toggle-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+        }
+    </style>
+</head>
+<body>
+
+    <button id="chatbot-toggle-button">💬</button>
+
+    <div id="chatbot-container">
+        <div id="chatbot-header">
+            RAG Chatbot
+            <button id="chatbot-close-button">✖</button>
+        </div>
+        <div id="chatbot-messages"></div>
+        <div id="chatbot-input-container">
+            <input type="text" id="chatbot-input" placeholder="Ask a question...">
+            <button id="chatbot-send-button">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const chatbotToggleButton = document.getElementById('chatbot-toggle-button');
+        const chatbotContainer = document.getElementById('chatbot-container');
+        const chatbotCloseButton = document.getElementById('chatbot-close-button');
+        const chatbotMessages = document.getElementById('chatbot-messages');
+        const chatbotInput = document.getElementById('chatbot-input');
+        const chatbotSendButton = document.getElementById('chatbot-send-button');
+
+        chatbotToggleButton.addEventListener('click', () => {
+            chatbotContainer.style.display = 'flex';
+            chatbotToggleButton.style.display = 'none';
+        });
+
+        chatbotCloseButton.addEventListener('click', () => {
+            chatbotContainer.style.display = 'none';
+            chatbotToggleButton.style.display = 'flex';
+        });
+
+        async function sendMessage() {
+            const query = chatbotInput.value.trim();
+            if (query === '') return;
+
+            addMessage(query, 'user-message');
+            chatbotInput.value = '';
+
+            try {
+                const response = await fetch('http://localhost:8000/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query: query }),
+                });
+                const data = await response.json();
+                addMessage(data.answer, 'bot-message');
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage('Sorry, something went wrong. Please try again.', 'bot-message');
+            }
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight; // Scroll to bottom
+        }
+
+        function addMessage(text, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', type);
+            messageDiv.textContent = text;
+            chatbotMessages.appendChild(messageDiv);
+        }
+
+        chatbotSendButton.addEventListener('click', sendMessage);
+        chatbotInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+
+</body>
+</html>
